@@ -1,0 +1,38 @@
+-- 获取玩家
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRoot = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+
+-- 创建一个 BodyVelocity 控制移动
+local bv = Instance.new("BodyVelocity")
+bv.MaxForce = Vector3.new(0, humanoidRoot.AssemblyMass * 5000, 0) -- 控制上浮力
+bv.Velocity = Vector3.new(0,0,0)
+bv.Parent = humanoidRoot
+
+-- 每帧更新判断是否在水中
+local RunService = game:GetService("RunService")
+local WATER_HEIGHT = 0 -- 根据你游戏水面的高度修改，如果有不同高度可以检测 Terrain 水体
+
+local connection
+connection = RunService.RenderStepped:Connect(function()
+    if humanoidRoot.Position.Y < WATER_HEIGHT then
+        bv.Velocity = Vector3.new(0, 50, 0) -- 向上浮动
+        humanoid.PlatformStand = true -- 防止掉入水中
+    else
+        bv.Velocity = Vector3.new(0,0,0)
+        humanoid.PlatformStand = false
+    end
+end)
+
+-- 清理函数，可手动调用
+local function stopWalkOnWater()
+    if connection then
+        connection:Disconnect()
+    end
+    bv:Destroy()
+    humanoid.PlatformStand = false
+end
+
+-- 结束水上行走示例
+-- stopWalkOnWater()
